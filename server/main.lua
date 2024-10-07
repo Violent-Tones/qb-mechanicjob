@@ -233,10 +233,28 @@ end)
 
 local performanceParts = {
     'veh_armor',
+    'veh_armor1',
+    'veh_armor2',
+    'veh_armor3',
+    'veh_armor4',
     'veh_brakes',
+    'veh_brakes1',
+    'veh_brakes2',
+    'veh_brakes3',
     'veh_engine',
+    'veh_engine1',
+    'veh_engine2',
+    'veh_engine3',
+    'veh_engine4',
     'veh_suspension',
+    'veh_suspension1',
+    'veh_suspension2',
+    'veh_suspension3',
+    'veh_suspension4',
     'veh_transmission',
+    'veh_transmission1',
+    'veh_transmission2',
+    'veh_transmission3',
     'veh_turbo',
 }
 

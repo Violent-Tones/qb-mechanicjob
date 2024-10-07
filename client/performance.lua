@@ -135,11 +135,20 @@ local function GetTurbo(vehicle)
 end
 
 -- Events
-
+local allItems = exports.ox_inventory:Items()
 RegisterNetEvent('qb-mechanicjob:client:install', function(data)
     local upgradeIndex = data.upgradeIndex
     local modType = data.modType
     local partName = data.upgradeType
+
+    -- Allow different level of upgrades (e.g. veh_armor, veh_armor1)
+    local itemName = 'veh_' .. partName .. (( upgradeIndex == 0 or upgradeIndex == -1 or upgradeIndex == nil) and '' or upgradeIndex)
+    local item = exports.ox_inventory:Search('count', itemName)
+    if item == 0 then
+        QBCore.Functions.Notify('You don\'t have ' .. allItems[itemName].label .. ' to do this install.')
+        return
+    end
+
     local animDict = 'mini@repair'
     local anim = 'fixing_a_player'
     local shouldToggleHood = false
@@ -170,28 +179,53 @@ RegisterNetEvent('qb-mechanicjob:client:install', function(data)
             SetVehicleMod(data.vehicle, modType, upgradeIndex, false)
         end
         if shouldToggleHood then ToggleHood(data.vehicle) end
-        TriggerServerEvent('qb-mechanicjob:server:removeItem', 'veh_' .. partName)
-        QBCore.Functions.Notify(string.format(Lang:t('success.installed'), partName), 'success')
+        TriggerServerEvent('qb-mechanicjob:server:removeItem', itemName)
+        QBCore.Functions.Notify(string.format(Lang:t('success.installed'), allItems[itemName].label), 'success')
     end, function()
         if shouldToggleHood then ToggleHood(data.vehicle) end
     end)
 end)
 
+local function isVehArmor(item)
+    return item == 'veh_armor' or item == 'veh_armor1' or item == 'veh_armor2' or
+           item == 'veh_armor3' or item == 'veh_armor4'
+end
+
+local function isVehBrakes(item)
+    return item == 'veh_brakes' or item == 'veh_brakes1' or
+           item == 'veh_brakes2' or item == 'veh_brakes3'
+end
+
+local function isVehSuspension(item)
+    return item == 'veh_suspension' or item == 'veh_suspension1' or item == 'veh_suspension2' or
+           item == 'veh_suspension3' or item == 'veh_suspension4'
+end
+
+local function isVehEngine(item)
+    return item == 'veh_engine' or item == 'veh_engine1' or item == 'veh_engine2' or
+           item == 'veh_engine3' or item == 'veh_engine4'
+end
+
+local function isVehTransmission(item)
+    return item == 'veh_transmission' or item == 'veh_transmission1' or
+           item == 'veh_transmission2' or item == 'veh_transmission3'
+end
+
 RegisterNetEvent('qb-mechanicjob:client:installPart', function(item)
     local vehicle, distance = QBCore.Functions.GetClosestVehicle()
     if vehicle == 0 or distance > 5.0 then return end
     if GetVehicleModKit(vehicle) ~= 0 then SetVehicleModKit(vehicle, 0) end
-    if item == 'veh_armor' or item == 'veh_brakes' or item == 'veh_suspension' then
+    if isVehArmor(item) or isVehBrakes(item) or isVehSuspension(item) then
         if GetClosestWheel(vehicle) == -1 then return end
-        if item == 'veh_armor' then GetArmor(vehicle) end
-        if item == 'veh_brakes' then GetBrakes(vehicle) end
-        if item == 'veh_suspension' then GetSuspension(vehicle) end
-    elseif item == 'veh_engine' or item == 'veh_transmission' or item == 'veh_turbo' then
+        if isVehArmor(item) then GetArmor(vehicle) end
+        if isVehBrakes(item) then GetBrakes(vehicle) end
+        if isVehSuspension(item) then GetSuspension(vehicle) end
+    elseif isVehEngine(item) or isVehTransmission(item) or item == 'veh_turbo' then
         if IsPedInAnyVehicle(PlayerPedId(), false) then return end
         if not IsNearBone(vehicle, 'engine') then return end
         if GetVehicleDoorAngleRatio(vehicle, 4) <= 0.0 then SetVehicleDoorOpen(vehicle, 4, false, false) end
-        if item == 'veh_engine' then GetEngine(vehicle) end
-        if item == 'veh_transmission' then GetTransmission(vehicle) end
+        if isVehEngine(item) then GetEngine(vehicle) end
+        if isVehTransmission(item) then GetTransmission(vehicle) end
         if item == 'veh_turbo' then GetTurbo(vehicle) end
     end
 end)
